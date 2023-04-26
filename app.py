@@ -5,7 +5,17 @@ import cv2          # 图像处理的库 OpenCv
 import base64
 import numpy as np  # 数据处理的库 numpy
 import re
-print('456')
+
+# # -----------------------to dosocket丟圖
+# dl.rwplot(dl.read_number_of_people("8:00","9:00"),"all")
+# # rwplot(read_one_of_people('同學B'))
+# # print(array_of_allname())
+# thename=dl.array_of_allname()
+# for i in thename:
+#     dl.rwplot(dl.read_one_of_people(i,"8:00","9:00"),i)
+#  # --------------------
+print('程式成功執行')
+
 
 app = Flask(__name__)
 socketio = SocketIO()
@@ -38,27 +48,31 @@ import dlib_test as dl
 import time
 @socketio.on('sendImg', namespace=name_space)
 def sendImg_message(base64):
-    t_start = time.time()
-    armimg=(base64.split(","))
-    img = np.zeros((256,256,3), dtype='uint8')   # 產生圖片陣列 100x100x4，每個項目為 [0,0,0] 的三維陣列
-    for i in range(0,256):                       #1維轉3維
-        for j in range(0,256):
-            img[j][i][0]= (int)(armimg[j*(256*4)+i*4+2])
-            img[j][i][1]= (int)(armimg[j*(256*4)+i*4+1])
-            img[j][i][2]= (int)(armimg[j*(256*4)+i*4+0])
-            #img[j][i][3]= (int)(armimg[j*(256*4)+i*4+3])
-                
-    img = dl.dilb_picture(img)
-    print(time.time()-t_start)
-    cv2.imshow("121",img)                    # 檢查轉換是否正卻
-    cv2.waitKey(0)                           # 按下任意鍵停止
-    cv2.destroyAllWindows()
-    
+    #t_start = time.time()
+    start = time.process_time()  
+    # rgb 時間
+    # 一維轉三維 執行時間：0.125000 秒
+    # dlib 執行時間：0.015625 秒
+    aimimg=(base64.split(","))
+    thename=aimimg[0]
+    aimimg.pop(0)
+    # print("aiming=",thename)
+    img = dl.make_graypicture(aimimg,256)
+    ear = dl.dilb_picture(img)
+    print("ear=",ear)
+    if ear<0.2 :
+        socketio.emit(thename, thename)#socketio.emit('thename', thename)
+    start2 = time.process_time()
+    # print("執行時間=",start2-start)         #執行時間：0.046875 秒
+    # 
+    # cv2.imshow("121",img)                    # 檢查轉換是否正卻
+    # cv2.waitKey(0)                           # 按下任意鍵停止
+    # cv2.destroyAllWindows()
 # 下面注册 连接/断开/消息 三个默认事件
 @socketio.on('connect', namespace=name_space)
 def connected_msg():
     print('client connected.')
-
+    # socketio.emit("connect")
 @socketio.on('disconnect', namespace=name_space)
 def disconnect_msg():
     print('client disconnected.')
@@ -83,4 +97,4 @@ def D_BASE64(origStr):
 
 if __name__ == '__main__':
     # app.run(host='0.0.0.0', port=5000, debug=True)
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True, keyfile='key.pem', certfile='cert.pem')
